@@ -86,7 +86,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
-          <mainClass>com.vendas123.sales.SalesApplication</mainClass>
+          <mainClass>com.vendas123.SalesApplication</mainClass>
         </configuration>
       </plugin>
       <plugin>
