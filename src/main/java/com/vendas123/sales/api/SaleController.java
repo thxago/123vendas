@@ -5,11 +5,7 @@ import com.vendas123.sales.api.dto.SaleResponse;
 import com.vendas123.sales.api.mapper.SaleMapper;
 import com.vendas123.sales.application.SaleService;
 import com.vendas123.sales.domain.model.Sale;
-import com.vendas123.sales.domain.ports.SaleRepository;
-import com.vendas123.sales.infrastructure.persistence.adapter.SaleRepositoryAdapter;
-import com.vendas123.sales.infrastructure.persistence.repository.SaleJpaRepository;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+// Removed manual bean configuration; using component scanning instead
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -73,16 +69,5 @@ public class SaleController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@Configuration
-	static class Beans {
-		@Bean
-		SaleService saleService(SaleRepository saleRepository) {
-			return new SaleService(saleRepository);
-		}
-
-		@Bean
-		SaleRepository saleRepositoryAdapter(SaleJpaRepository jpa) {
-			return new SaleRepositoryAdapter(jpa);
-		}
-	}
+	// Beans provided by component scan (@Service/@Repository)
 }
