@@ -1,11 +1,19 @@
 services:
   sales-service:
-    build: .
+    build:
+      context: .
+      args:
+        HTTP_PROXY: ${HTTP_PROXY}
+        HTTPS_PROXY: ${HTTPS_PROXY}
+        NO_PROXY: ${NO_PROXY}
     image: vendas123/sales-service:dev
     ports:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=default
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
   prometheus:
     image: prom/prometheus:latest
     ports:
@@ -14,6 +22,10 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
       - sales-service
+    environment:
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
   grafana:
     image: grafana/grafana-oss:latest
     ports:
