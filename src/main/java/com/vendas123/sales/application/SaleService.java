@@ -1,0 +1,67 @@
+package com.vendas123.sales.application;
+
+import com.vendas123.sales.domain.model.Sale;
+import com.vendas123.sales.domain.model.SaleItem;
+import com.vendas123.sales.domain.model.SaleStatus;
+import com.vendas123.sales.domain.ports.SaleRepository;
+import com.vendas123.shared.exception.NotFoundException;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+public class SaleService {
+	private final SaleRepository saleRepository;
+
+	public SaleService(SaleRepository saleRepository) {
+		this.saleRepository = saleRepository;
+	}
+
+	public Sale create(String clientId, String clientName,
+	                   String branchId, String branchName,
+	                   LocalDateTime saleDate,
+	                   List<SaleItem> items) {
+		String saleNumber = generateSaleNumber();
+		Sale sale = Sale.create(saleNumber, saleDate, clientId, clientName, branchId, branchName, items);
+		return saleRepository.save(sale);
+	}
+
+	public Sale get(UUID id) {
+		return saleRepository.findById(id)
+				.orElseThrow(() -> new NotFoundException("Sale not found: " + id));
+	}
+
+	public List<Sale> list(int page, int size) {
+		return saleRepository.findAll(page, size);
+	}
+
+	public Sale update(UUID id, String clientId, String clientName,
+	                   String branchId, String branchName,
+	                   LocalDateTime saleDate,
+	                   List<SaleItem> newItems) {
+		Sale sale = get(id);
+		sale.setClient(clientId, clientName);
+		sale.setBranch(branchId, branchName);
+		sale.setSaleDate(saleDate != null ? saleDate : sale.getSaleDate());
+		sale.replaceItems(newItems);
+		return saleRepository.save(sale);
+	}
+
+	public Sale cancel(UUID id) {
+		Sale sale = get(id);
+		if (sale.getStatus() == SaleStatus.CANCELLED) return sale;
+		sale.cancel();
+		return saleRepository.save(sale);
+	}
+
+	public void delete(UUID id) {
+		get(id); // ensure exists
+		saleRepository.deleteById(id);
+	}
+
+	private String generateSaleNumber() {
+		// Simple, unique enough: S-<epoch>-<count+1>
+		long seq = saleRepository.count() + 1;
+		return "S-" + System.currentTimeMillis() + "-" + seq;
+	}
+}
