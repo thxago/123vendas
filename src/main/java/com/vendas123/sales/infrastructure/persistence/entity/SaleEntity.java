@@ -64,24 +64,19 @@ public class SaleEntity {
 	}
 
 	public Sale toDomain() {
-		List<SaleItem> domainItems = items.stream()
-				.map(SaleItemEntity::toDomain)
-				.collect(Collectors.toList());
-		Sale s = Sale.create(
-				this.saleNumber,
-				this.saleDate,
-				this.clientExternalId, this.clientName,
-				this.branchExternalId, this.branchName,
-				domainItems
-		);
-		// override generated id with persisted id
-		try {
-			var idField = Sale.class.getDeclaredField("id");
-			idField.setAccessible(true);
-			idField.set(s, this.id);
-		} catch (Exception ignored) {}
-		if (this.status == SaleStatus.CANCELLED) s.cancel();
-		return s;
+	List<SaleItem> domainItems = items.stream()
+		.map(SaleItemEntity::toDomain)
+		.collect(Collectors.toList());
+	return Sale.restore(
+		this.id,
+		this.saleNumber,
+		this.saleDate,
+		this.clientExternalId, this.clientName,
+		this.branchExternalId, this.branchName,
+		domainItems,
+		this.status,
+		this.totalAmount
+	);
 	}
 
 	// getters/setters omitted for brevity

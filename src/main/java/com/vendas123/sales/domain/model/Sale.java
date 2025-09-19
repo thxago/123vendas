@@ -44,6 +44,33 @@ public class Sale {
 		return s;
 	}
 
+	/**
+	 * Rehydrate a Sale from persistence without triggering domain-generated IDs or side effects.
+	 */
+	public static Sale restore(UUID id,
+							   String saleNumber,
+							   LocalDateTime saleDate,
+							   String clientExternalId, String clientName,
+							   String branchExternalId, String branchName,
+							   List<SaleItem> items,
+							   SaleStatus status,
+							   BigDecimal totalAmount) {
+		Sale s = new Sale();
+		s.id = Objects.requireNonNull(id);
+		s.saleNumber = Objects.requireNonNull(saleNumber);
+		s.saleDate = Objects.requireNonNull(saleDate);
+		s.clientExternalId = Objects.requireNonNull(clientExternalId);
+		s.clientName = Objects.requireNonNull(clientName);
+		s.branchExternalId = Objects.requireNonNull(branchExternalId);
+		s.branchName = Objects.requireNonNull(branchName);
+		if (items == null || items.isEmpty()) throw new BusinessException("Sale must have at least one item");
+		s.items.addAll(items);
+		s.status = Objects.requireNonNullElse(status, SaleStatus.ACTIVE);
+		// Trust persisted total; still normalize scale
+		s.totalAmount = Objects.requireNonNull(totalAmount).setScale(2, RoundingMode.HALF_UP);
+		return s;
+	}
+
 	public void replaceItems(List<SaleItem> newItems) {
 		if (newItems == null || newItems.isEmpty()) throw new BusinessException("Sale must have at least one item");
 		this.items.clear();
