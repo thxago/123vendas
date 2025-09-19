@@ -44,7 +44,8 @@ public class RestExceptionHandler {
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
 		String name = ex.getName();
-		String requiredType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "";
+		Class<?> type = ex.getRequiredType();
+		String requiredType = (type == null) ? "" : type.getSimpleName();
 		String msg = "Invalid value for parameter '" + name + "'" + (requiredType.isEmpty() ? "" : ", expected " + requiredType);
 		log.debug("Type mismatch: {} -> {}", name, ex.getValue());
 		return error(HttpStatus.BAD_REQUEST, msg);
