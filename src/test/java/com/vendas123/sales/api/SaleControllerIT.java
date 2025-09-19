@@ -58,7 +58,7 @@ class SaleControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.items[0].quantity").value(5))
-                .andExpect(jsonPath("$.totalAmount").value("45.00"));
+                .andExpect(jsonPath("$.totalAmount").value(45.0));
 
         // list
         mockMvc.perform(get("/api/v1/sales"))
@@ -73,6 +73,29 @@ class SaleControllerIT {
         // delete
         mockMvc.perform(delete(Objects.requireNonNull(location)))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void update_replaces_items_and_total_changes() throws Exception {
+        // create initial sale with quantity 5 x 10.00 => 45.00 total
+        String body = objectMapper.writeValueAsString(sampleRequest());
+        String location = mockMvc.perform(post("/api/v1/sales")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getHeader("Location");
+
+        // update: change to quantity 3 x 10.00 => 30.00 total (no discount)
+        SaleRequest updateReq = sampleRequest();
+        updateReq.items.get(0).quantity = 3;
+        String updateBody = objectMapper.writeValueAsString(updateReq);
+
+        mockMvc.perform(put(location)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].quantity").value(3))
+                .andExpect(jsonPath("$.totalAmount").value(30.0));
     }
 
     @Test

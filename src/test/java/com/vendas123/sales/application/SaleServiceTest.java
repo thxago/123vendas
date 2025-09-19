@@ -99,6 +99,18 @@ class SaleServiceTest {
     }
 
     @Test
+    void cancel_already_cancelled_noop() {
+        Sale existing = Sale.create("S-1", LocalDateTime.now(), "C1","Client","B1","Branch", List.of(item(1, "10.00")));
+        existing.cancel();
+        when(repo.findById(existing.getId())).thenReturn(Optional.of(existing));
+
+        Sale result = service.cancel(existing.getId());
+        assertEquals(com.vendas123.sales.domain.model.SaleStatus.CANCELLED, result.getStatus());
+        verify(repo, never()).save(any());
+        verify(events, never()).publish(eq("CompraCancelada"), any());
+    }
+
+    @Test
     void delete_active_throws_business_exception() {
         UUID id = UUID.randomUUID();
         when(repo.findById(id)).thenReturn(Optional.of(Sale.create("S-1", LocalDateTime.now(), "C","N","B","BN", List.of(item(1, "1.00")))));
