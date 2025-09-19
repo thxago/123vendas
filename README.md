@@ -18,6 +18,8 @@ Sales API implementing DDD and business rules:
 - API: http://localhost:8080/api/v1/sales
 - Health: http://localhost:8080/actuator/health
 - Metrics: http://localhost:8080/actuator/prometheus
+ - API Docs (Swagger UI): http://localhost:8080/swagger-ui.html
+ - OpenAPI JSON: http://localhost:8080/v3/api-docs
 
 ## Tests
 - Run all tests: mvn test
@@ -41,12 +43,48 @@ The application exposes Micrometer metrics at /actuator/prometheus.
 
 See controller and DTOs for request/response contracts.
 
+### Quick cURL examples
+
+Create sale:
+
+```powershell
+$body = '{
+	"clientExternalId": "C1",
+	"clientName": "Client 1",
+	"branchExternalId": "B1",
+	"branchName": "Branch 1",
+	"items": [ { "productExternalId": "P1", "productName": "Prod 1", "quantity": 5, "unitPrice": 10.00 } ]
+}'
+Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/sales -ContentType 'application/json' -Body $body -Headers @{}
+```
+
+Get by id:
+
+```powershell
+Invoke-RestMethod -Method Get -Uri http://localhost:8080/api/v1/sales/{id}
+```
+
+Cancel and delete:
+
+```powershell
+Invoke-RestMethod -Method Patch -Uri http://localhost:8080/api/v1/sales/{id}/cancel
+Invoke-RestMethod -Method Delete -Uri http://localhost:8080/api/v1/sales/{id}
+```
+
 ## Architecture
 - Domain (aggregate): Sale (root), SaleItem (child), SaleStatus (enum)
 - Domain service: PricingPolicy (discount rules)
 - Application service: SaleService (use cases, transactions)
 - Infrastructure: Spring Data JPA repository
 - API: REST Controller, DTOs, Exception Handler
+
+## Diagrams
+- [C4 Context](docs/diagrams/c4-context.md)
+- [C4 Container](docs/diagrams/c4-container.md)
+- [C4 Component](docs/diagrams/c4-component.md)
+- [Deployment](docs/diagrams/c4-deployment.md)
+- [Sequence (Create Sale)](docs/diagrams/sequence-create-sale.md)
+- [ER Model](docs/diagrams/er-model.md)
 
 ## Git Flow + Conventional Commits (suggested)
 - Branches: main, develop, feature/*, hotfix/*, release/*
