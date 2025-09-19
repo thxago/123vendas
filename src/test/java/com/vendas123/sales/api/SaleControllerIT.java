@@ -66,7 +66,7 @@ class SaleControllerIT {
                 .andExpect(jsonPath("$[0].id").exists());
 
         // cancel
-        mockMvc.perform(patch(location + "/cancel"))
+        mockMvc.perform(patch(Objects.requireNonNull(location) + "/cancel"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CANCELLED"));
 
@@ -90,7 +90,7 @@ class SaleControllerIT {
         updateReq.items.get(0).quantity = 3;
         String updateBody = objectMapper.writeValueAsString(updateReq);
 
-        mockMvc.perform(put(location)
+        mockMvc.perform(put(Objects.requireNonNull(location))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateBody))
                 .andExpect(status().isOk())
@@ -114,9 +114,9 @@ class SaleControllerIT {
                 .andExpect(status().isUnprocessableEntity());
 
         // cancel then delete -> 204
-        mockMvc.perform(patch(location + "/cancel"))
+        mockMvc.perform(patch(Objects.requireNonNull(location) + "/cancel"))
                 .andExpect(status().isOk());
-        mockMvc.perform(delete(location))
+        mockMvc.perform(delete(Objects.requireNonNull(location)))
                 .andExpect(status().isNoContent());
     }
 }

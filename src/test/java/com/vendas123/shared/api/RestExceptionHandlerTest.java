@@ -2,7 +2,6 @@ package com.vendas123.shared.api;
 
 import com.vendas123.sales.api.SaleController;
 import com.vendas123.sales.application.SaleService;
-import com.vendas123.sales.domain.model.SaleItem;
 import com.vendas123.shared.exception.BusinessException;
 import com.vendas123.shared.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
@@ -15,12 +14,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;

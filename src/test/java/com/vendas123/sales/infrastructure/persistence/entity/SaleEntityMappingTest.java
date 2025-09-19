@@ -2,7 +2,6 @@ package com.vendas123.sales.infrastructure.persistence.entity;
 
 import com.vendas123.sales.domain.model.Sale;
 import com.vendas123.sales.domain.model.SaleItem;
-import com.vendas123.sales.domain.model.SaleStatus;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
