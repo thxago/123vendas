@@ -5,6 +5,7 @@ import com.vendas123.shared.exception.BusinessException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
+import com.vendas123.sales.domain.service.PricingPolicy;
 
 public class SaleItem {
 	private String productExternalId;
@@ -27,12 +28,7 @@ public class SaleItem {
 
 	public void recalculate() {
 		var gross = unitPrice.multiply(BigDecimal.valueOf(quantity));
-		BigDecimal rate = BigDecimal.ZERO;
-		if (quantity >= 10) {
-			rate = new BigDecimal("0.20");
-		} else if (quantity >= 4) {
-			rate = new BigDecimal("0.10");
-		}
+		BigDecimal rate = PricingPolicy.discountPercentForQuantity(quantity);
 		this.discount = gross.multiply(rate).setScale(2, RoundingMode.HALF_UP);
 		this.total = gross.subtract(discount).setScale(2, RoundingMode.HALF_UP);
 	}

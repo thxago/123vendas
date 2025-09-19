@@ -18,25 +18,36 @@ Sales API implementing DDD and business rules:
 - JUnit 5
 
 ## How to run (local)
-- Prereqs: Java 17 + Maven
-- Start app:
   mvn spring-boot:run
-- API base URL:
   http://localhost:8080/api/v1/sales
-- Actuator/Prometheus:
   http://localhost:8080/actuator/health
   http://localhost:8080/actuator/prometheus
+## Running Tests and Observability Stack with Docker Compose
+1) Build and run locally with Maven
+  - Use your IDE or `mvn spring-boot:run` to start the service on port 8080.
+  - Healthcheck: GET http://localhost:8080/actuator/health
 
-## Build and run Jar
-- Build: mvn clean package
-- Run: java -jar target/sales-service-0.1.0.jar
+2) Run tests
+  - Unit + integration tests: `mvn test`
 
-## Run tests
-- Unit + integration tests:
+3) Docker image
+  - Build: Dockerfile uses multi-stage Maven build.
+  - Run: `docker compose up --build` (includes Prometheus/Grafana stack below).
+
   mvn clean verify
 
 ## Observability (Docker)
 - Build app image and start stack (app + Prometheus + Grafana):
+The application exposes Micrometer metrics at `/actuator/prometheus`.
+
+Docker Compose stack included:
+- Prometheus on http://localhost:9090 (scrapes the app)
+- Grafana on http://localhost:3000 (admin / admin)
+
+How to run:
+1) docker compose up --build
+2) Open Grafana, add Prometheus data source at http://prometheus:9090
+3) Import dashboard 12900 (Spring Boot Micrometer) or build your own panels.
   docker compose -f docker/docker-compose.yml up --build
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3000 (user: admin / pass: admin)

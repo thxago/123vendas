@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  sales-service:
+    build: .
+    image: vendas123/sales-service:dev
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - sales-service
+  grafana:
+    image: grafana/grafana-oss:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+volumes:
+  grafana-data:

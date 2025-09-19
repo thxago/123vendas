@@ -1,6 +1,6 @@
 package com.vendas123.sales.domain.service;
 
-import com.vendas123.sales.domain.exception.BusinessException;
+import com.vendas123.shared.exception.BusinessException;
 
 import java.math.BigDecimal;
 

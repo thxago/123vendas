@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SaleService {
@@ -19,6 +20,7 @@ public class SaleService {
 		this.saleRepository = saleRepository;
 	}
 
+	@Transactional
 	public Sale create(String clientId, String clientName,
 	                   String branchId, String branchName,
 	                   LocalDateTime saleDate,
@@ -28,15 +30,18 @@ public class SaleService {
 		return saleRepository.save(sale);
 	}
 
+	@Transactional(readOnly = true)
 	public Sale get(UUID id) {
 		return saleRepository.findById(id)
 				.orElseThrow(() -> new NotFoundException("Sale not found: " + id));
 	}
 
+	@Transactional(readOnly = true)
 	public List<Sale> list(int page, int size) {
 		return saleRepository.findAll(page, size);
 	}
 
+	@Transactional
 	public Sale update(UUID id, String clientId, String clientName,
 	                   String branchId, String branchName,
 	                   LocalDateTime saleDate,
@@ -49,6 +54,7 @@ public class SaleService {
 		return saleRepository.save(sale);
 	}
 
+	@Transactional
 	public Sale cancel(UUID id) {
 		Sale sale = get(id);
 		if (sale.getStatus() == SaleStatus.CANCELLED) return sale;
@@ -56,6 +62,7 @@ public class SaleService {
 		return saleRepository.save(sale);
 	}
 
+	@Transactional
 	public void delete(UUID id) {
 		get(id); // ensure exists
 		saleRepository.deleteById(id);
