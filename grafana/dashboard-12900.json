@@ -1,0 +1,217 @@
+{
+  "uid": "sales-spring-boot",
+  "title": "Sales Service - Spring Boot Metrics",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "tags": ["spring-boot", "micrometer", "prometheus"],
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": { "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"], "hidden": false },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "refresh": 1,
+        "label": "Prometheus",
+        "current": { "text": "Prometheus", "value": "Prometheus" }
+      },
+      {
+        "name": "instance",
+        "label": "Instance",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "refresh": 2,
+        "query": "label_values(up, instance)",
+        "current": { "text": "All", "value": "" },
+        "includeAll": true,
+        "multi": true
+      },
+      {
+        "name": "job",
+        "label": "Job",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "refresh": 2,
+        "query": "label_values(up, job)",
+        "current": { "text": "sales-service", "value": "sales-service" },
+        "includeAll": true,
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Application Health",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "UP",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "max by (job) (up{job=~\"$job\", instance=~\"$instance\"})", "legendFormat": "{{job}}" }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "mappings": [ { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } } ], "unit": "none" }, "overrides": [] },
+      "gridPos": { "h": 3, "w": 4, "x": 0, "y": 1 }
+    },
+    {
+      "type": "gauge",
+      "title": "HTTP Req/s",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(http_server_requests_seconds_count{job=~\"$job\", instance=~\"$instance\"}[1m]))", "legendFormat": "req/s" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "req/s", "min": 0 }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 6, "x": 4, "y": 1 }
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP 5xx/4xx Rate",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (status) (rate(http_server_requests_seconds_count{status=~\"5..\", job=~\"$job\", instance=~\"$instance\"}[5m]))", "legendFormat": "5xx" },
+        { "expr": "sum by (status) (rate(http_server_requests_seconds_count{status=~\"4..\", job=~\"$job\", instance=~\"$instance\"}[5m]))", "legendFormat": "4xx" }
+      ],
+      "gridPos": { "h": 6, "w": 14, "x": 10, "y": 1 }
+    },
+
+    { "type": "row", "title": "JVM", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 } },
+    {
+      "type": "timeseries",
+      "title": "Heap Used",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum(jvm_memory_used_bytes{area=\"heap\", job=~\"$job\", instance=~\"$instance\"})" } ],
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Heap Max",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum(jvm_memory_max_bytes{area=\"heap\", job=~\"$job\", instance=~\"$instance\"})" } ],
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "GC Pause (s)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum(rate(jvm_gc_pause_seconds_sum{job=~\"$job\", instance=~\"$instance\"}[5m]))" } ],
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 8 }
+    },
+
+    { "type": "row", "title": "CPU & System", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 } },
+    {
+      "type": "timeseries",
+      "title": "Process CPU %",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "avg(process_cpu_usage{job=~\"$job\", instance=~\"$instance\"}) * 100", "legendFormat": "CPU %" } ],
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 15 }
+    },
+    {
+      "type": "timeseries",
+      "title": "System Load",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "node_load1{job=~\"$job\", instance=~\"$instance\"}", "legendFormat": "load1" } ],
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 15 }
+    },
+    {
+      "type": "timeseries",
+      "title": "System Memory Used",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)", "legendFormat": "used" } ],
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 15 }
+    },
+
+    { "type": "row", "title": "HTTP Server", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 } },
+    {
+      "type": "timeseries",
+      "title": "Latency p95 (s)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job=~\"$job\", instance=~\"$instance\"}[5m])))" } ],
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 22 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency p99 (s)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_requests_seconds_bucket{job=~\"$job\", instance=~\"$instance\"}[5m])))" } ],
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 22 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Requests by Status",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum by (status) (rate(http_server_requests_seconds_count{job=~\"$job\", instance=~\"$instance\"}[1m]))", "legendFormat": "{{status}}" } ],
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 28 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Requests by Method",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum by (method) (rate(http_server_requests_seconds_count{job=~\"$job\", instance=~\"$instance\"}[1m]))", "legendFormat": "{{method}}" } ],
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 28 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Active HTTP Connections",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum( http_server_active_connections{job=~\"$job\", instance=~\"$instance\"} )", "legendFormat": "active" } ],
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 28 }
+    },
+
+    { "type": "row", "title": "Business Metrics", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 } },
+    {
+      "type": "timeseries",
+      "title": "Sales Created (rate)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum(rate(application_events_total{event=\"CompraEfetuada\", job=~\"$job\", instance=~\"$instance\"}[5m]))", "legendFormat": "created" } ],
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 35 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Sales Updated (rate)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum(rate(application_events_total{event=\"CompraAlterada\", job=~\"$job\", instance=~\"$instance\"}[5m]))", "legendFormat": "updated" } ],
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 35 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Items Cancelled (rate)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum(rate(application_events_total{event=\"ItemCancelado\", job=~\"$job\", instance=~\"$instance\"}[5m]))", "legendFormat": "item-canceled" } ],
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 35 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Sales Cancelled (rate)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum(rate(application_events_total{event=\"CompraCancelada\", job=~\"$job\", instance=~\"$instance\"}[5m]))", "legendFormat": "canceled" } ],
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 41 }
+    },
+
+    { "type": "row", "title": "DB & Threads", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 47 } },
+    {
+      "type": "timeseries",
+      "title": "Hikari Active Connections",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "hikaricp_active_connections{job=~\"$job\", instance=~\"$instance\"}" } ],
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 48 }
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM Threads",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [ { "expr": "sum(jvm_threads_live_threads{job=~\"$job\", instance=~\"$instance\"})" } ],
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 48 }
+    }
+  ]
+}
