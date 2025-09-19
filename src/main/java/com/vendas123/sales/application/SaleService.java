@@ -52,16 +52,20 @@ public class SaleService {
 	                   String branchId, String branchName,
 	                   LocalDateTime saleDate,
 	                   List<SaleItem> newItems) {
-		Sale sale = get(id);
-		var beforeItems = sale.getItems();
+	Sale sale = get(id);
+	// Capture product IDs before mutation
+	var beforeSet = sale.getItems().stream()
+		.map(SaleItem::getProductExternalId)
+		.collect(java.util.stream.Collectors.toSet());
 		sale.setClient(clientId, clientName);
 		sale.setBranch(branchId, branchName);
 		sale.setSaleDate(saleDate != null ? saleDate : sale.getSaleDate());
 		sale.replaceItems(newItems);
 		Sale saved = saleRepository.save(sale);
-		// Detect removed items -> ItemCancelado events
-		var beforeSet = beforeItems.stream().map(i -> i.getProductExternalId()).collect(java.util.stream.Collectors.toSet());
-		var afterSet = saved.getItems().stream().map(i -> i.getProductExternalId()).collect(java.util.stream.Collectors.toSet());
+	// Detect removed items -> ItemCancelado events
+	var afterSet = saved.getItems().stream()
+		.map(SaleItem::getProductExternalId)
+		.collect(java.util.stream.Collectors.toSet());
 		for (String removed : beforeSet) {
 			if (!afterSet.contains(removed)) {
 				events.publish("ItemCancelado", java.util.Map.of("saleId", saved.getId(), "productExternalId", removed));
