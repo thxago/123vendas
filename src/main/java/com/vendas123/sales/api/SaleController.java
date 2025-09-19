@@ -36,18 +36,18 @@ public class SaleController {
 	}
 
 	@GetMapping("{id}")
-	public SaleResponse get(@PathVariable UUID id) {
+	public SaleResponse get(@PathVariable("id") UUID id) {
 		return SaleMapper.toResponse(service.get(id));
 	}
 
 	@GetMapping
-	public List<SaleResponse> list(@RequestParam(defaultValue = "0") int page,
-	                               @RequestParam(defaultValue = "20") int size) {
+	public List<SaleResponse> list(@RequestParam(name = "page", defaultValue = "0") int page,
+								   @RequestParam(name = "size", defaultValue = "20") int size) {
 		return service.list(page, size).stream().map(SaleMapper::toResponse).toList();
 	}
 
 	@PutMapping("{id}")
-	public SaleResponse update(@PathVariable UUID id, @Validated @RequestBody SaleRequest req) {
+	public SaleResponse update(@PathVariable("id") UUID id, @Validated @RequestBody SaleRequest req) {
 		Sale sale = service.update(
 				id,
 				req.clientExternalId, req.clientName,
@@ -59,12 +59,12 @@ public class SaleController {
 	}
 
 	@PatchMapping("{id}/cancel")
-	public SaleResponse cancel(@PathVariable UUID id) {
+	public SaleResponse cancel(@PathVariable("id") UUID id) {
 		return SaleMapper.toResponse(service.cancel(id));
 	}
 
 	@DeleteMapping("{id}")
-	public ResponseEntity<Void> delete(@PathVariable UUID id) {
+	public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
 		service.delete(id);
 		return ResponseEntity.noContent().build();
 	}
