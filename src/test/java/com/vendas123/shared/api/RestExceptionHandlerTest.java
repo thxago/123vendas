@@ -4,6 +4,7 @@ import com.vendas123.sales.api.SaleController;
 import com.vendas123.sales.application.SaleService;
 import com.vendas123.shared.exception.BusinessException;
 import com.vendas123.shared.exception.NotFoundException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,6 +14,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.UUID;
 
@@ -95,5 +98,25 @@ class RestExceptionHandlerTest {
         mockMvc.perform(get("/api/v1/sales"))
             .andExpect(status().isInternalServerError())
             .andExpect(jsonPath("$.status").value(500));
+    }
+
+    @Test
+    void bindException_returns_400() throws Exception {
+        // Force Spring to throw BindException by binding invalid payload to SaleRequest via controller method
+        // Here we simulate by directly invoking the endpoint with empty body but form content type
+        RestExceptionHandler handler = new RestExceptionHandler();
+        BindException be = new BindException(new Object(), "target");
+        var resp = handler.handleValidation(be);
+        assertEquals(400, resp.getStatusCode().value());
+    }
+
+    @Test
+    void typeMismatch_with_null_requiredType_returns_400() throws Exception {
+        // Create a synthetic MethodArgumentTypeMismatchException and pass through handler directly
+        RestExceptionHandler handler = new RestExceptionHandler();
+        MethodArgumentTypeMismatchException ex = new MethodArgumentTypeMismatchException(
+                "abc", null, "id", null, null);
+        var resp = handler.handleTypeMismatch(ex);
+        assertEquals(400, resp.getStatusCode().value());
     }
 }
