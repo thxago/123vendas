@@ -74,4 +74,26 @@ class SaleControllerIT {
         mockMvc.perform(delete(Objects.requireNonNull(location)))
                 .andExpect(status().isNoContent());
     }
+
+    @Test
+    void delete_requires_cancelled_status() throws Exception {
+        // create a sale
+        String body = objectMapper.writeValueAsString(sampleRequest());
+        String location = mockMvc.perform(post("/api/v1/sales")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(header().exists("Location"))
+                .andReturn().getResponse().getHeader("Location");
+
+        // attempt delete while ACTIVE -> 422
+        mockMvc.perform(delete(Objects.requireNonNull(location)))
+                .andExpect(status().isUnprocessableEntity());
+
+        // cancel then delete -> 204
+        mockMvc.perform(patch(location + "/cancel"))
+                .andExpect(status().isOk());
+        mockMvc.perform(delete(location))
+                .andExpect(status().isNoContent());
+    }
 }

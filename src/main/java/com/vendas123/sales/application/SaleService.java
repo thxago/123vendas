@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.vendas123.shared.exception.BusinessException;
 
 @Service
 public class SaleService {
@@ -64,7 +65,10 @@ public class SaleService {
 
 	@Transactional
 	public void delete(UUID id) {
-		get(id); // ensure exists
+		Sale sale = get(id); // ensure exists
+		if (sale.getStatus() != SaleStatus.CANCELLED) {
+			throw new BusinessException("Only cancelled sales can be deleted");
+		}
 		saleRepository.deleteById(id);
 	}
 
