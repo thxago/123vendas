@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.core.MethodParameter;
 
 import java.util.UUID;
 
@@ -114,8 +115,12 @@ class RestExceptionHandlerTest {
     void typeMismatch_with_null_requiredType_returns_400() throws Exception {
         // Create a synthetic MethodArgumentTypeMismatchException and pass through handler directly
         RestExceptionHandler handler = new RestExceptionHandler();
-        MethodArgumentTypeMismatchException ex = new MethodArgumentTypeMismatchException(
-                "abc", null, "id", null, null);
+    // Build a non-null MethodParameter from SaleController.get(UUID)
+    java.lang.reflect.Method m = com.vendas123.sales.api.SaleController.class
+        .getMethod("get", java.util.UUID.class);
+    MethodParameter mp = new MethodParameter(m, 0);
+    MethodArgumentTypeMismatchException ex = new MethodArgumentTypeMismatchException(
+        "abc", null, "id", mp, null);
         var resp = handler.handleTypeMismatch(ex);
         assertEquals(400, resp.getStatusCode().value());
     }
