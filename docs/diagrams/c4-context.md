@@ -19,5 +19,5 @@ C4Context
     Rel(sales_api, db, "Persist sales & items", "JPA")
     Rel(sales_api, prom, "Expose metrics /actuator/prometheus", "HTTP/Prometheus")
     Rel(graf, prom, "Query metrics", "HTTP")
-    Rel(sales_api, crm, "References (IDs/Names) [denormalized]", "" )
+    Rel(sales_api, crm, "References (IDs/Names) - denormalized")
 ```

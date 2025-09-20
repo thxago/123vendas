@@ -5,17 +5,19 @@ erDiagram
     SALE ||--o{ SALE_ITEM : contains
     SALE {
         UUID id PK
+        VARCHAR sale_number
         TIMESTAMP created_at
-        DECIMAL(15,2) total_amount
+        DECIMAL total_amount
         VARCHAR status
     }
     SALE_ITEM {
-        UUID id PK
+        BIGINT id PK
         UUID sale_id FK
         VARCHAR product_code
         VARCHAR description
         INT quantity
-        DECIMAL(15,2) unit_price
-        DECIMAL(15,2) total_price
+        DECIMAL unit_price
+        DECIMAL discount
+        DECIMAL total_price
     }
 ```

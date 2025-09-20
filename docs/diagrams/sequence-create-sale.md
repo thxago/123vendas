@@ -14,7 +14,10 @@ sequenceDiagram
 
     C->>API: POST /api/v1/sales (SaleRequest)
     API->>S: createSale(request)
-    S->>D: new Sale(...); add items; recalculate
+    Note over D: PricingPolicy\nqty 1..3 → 0%\nqty 4..9 → 10%\nqty 10..20 → 20%\n>20 → 422 (BusinessException)
+    S->>D: new Sale(...)
+    S->>D: add items
+    S->>D: recalculate totals
     D-->>S: Sale with totals
     S->>R: save(sale)
     R->>A: save(sale)
